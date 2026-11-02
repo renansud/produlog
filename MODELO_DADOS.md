@@ -4,7 +4,7 @@
 
 Versão inicial **normalizada só onde há ganho claro**. Manter dimensões de operação, supervisor e técnico com identificadores próprios; preservar o registro de origem e o histórico das importações.
 
-| Modelo Prisma proposto | Campos centrais | Responsabilidade |
+| Modelo Prisma implementado | Campos centrais | Responsabilidade |
 |---|---|---|
 | `UserProfile` | `id UUID` (mesmo Supabase Auth user ID), `email`, `role`, `active`, `createdAt` | autorização/identidade local; Auth gerencia senha |
 | `UserOperationAccess` | `userId`, `operationId` | escopo por operação |
@@ -32,37 +32,11 @@ Versão inicial **normalizada só onde há ganho claro**. Manter dimensões de o
 - `production` numérico decimal, não string formatada e não JS float como fonte de verdade.
 - Múltiplos homônimos são possíveis: quando não existir ID externo, revisão de correspondência de técnicos na importação é obrigatória.
 
-## Desenho Prisma sugerido (não é migração executável)
+## Schema implementado em 2026-11-02
 
-```prisma
-// Trecho ilustrativo: o agente deve completar índices, relações e tabelas.
-enum UserRole {
-  ADMIN
-  USER
-}
+Fonte canônica: [schema.prisma](painel-produtividade/prisma/schema.prisma). Prisma 7.10.1, tabelas/colunas mapeadas para snake_case, oito modelos, UUIDs, timestamps e índices/FKs completos. Migration inicial em prisma/migrations/20261102000000_initial/migration.sql, gerada offline, sem aplicação no banco. Contém RLS sem políticas públicas, grants restritos e checks de competência/contagens.
 
-model UserProfile {
-  id        String   @id @db.Uuid
-  email     String   @unique
-  role      UserRole @default(USER)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-}
-
-model ProductivityRecord {
-  id             String   @id @default(uuid()) @db.Uuid
-  referenceMonth DateTime @db.Date
-  contract       String
-  production     Decimal  @db.Decimal(14, 2)
-  goalMet        Boolean?
-  controller     String?
-  status         String?
-  sourceRowKey   String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  // Relações com Operation, Supervisor, Technician e ImportBatch na etapa 03.
-}
-```
+UserProfile não contém senha nem gerencia auth.users. Fonte transitória de autorização continua app_metadata até provisioning/repositório local. Operações têm normalizedName único; técnico/supervisor admitem homônimos e usam externalId opaco e único quando disponível. source é namespace de origem, separado de kind do lote; source + sourceRowKey é único. Não há importação idempotente aplicada ainda. [Entrega e limites](docs/ENTREGA_E03-T01-T02.md).
 
 ## Autorização e Supabase
 
@@ -75,7 +49,7 @@ model ProductivityRecord {
 - `DATABASE_URL`: **transaction pooler 6543** para runtime serverless Vercel, com configuração compatível (`pgbouncer=true` se indicada pela versão/driver).
 - `DIRECT_URL`: conexão **direta** para migrações, ou session pooler `5432` quando necessário (por exemplo IPv4-only).
 - Prisma 7: `prisma.config.ts` usa `DIRECT_URL` como `datasource.url` **para comandos de migração**; `@prisma/adapter-pg` no servidor recebe `DATABASE_URL`.
-- Conferir instruções do conjunto de versões instalado antes de criar `prisma.config.ts`. Não copiar snippet de Prisma 6 sem adaptação.
+- Versões instaladas: CLI/client/adapter-pg 7.10.1. Conferir documentação instalada ao alterar `prisma.config.ts`. Não copiar snippet de Prisma 6 sem adaptação. TLS com CA pública verificada: runtime usa sslrootcert/verify-full; CLI traduz para sslcert/sslaccept=strict. Os dois destinos passaram em SELECT 1 via Prisma, sem mutation.
 - `prisma migrate dev` só local/dev; `prisma migrate deploy` em pipeline controlado para produção.
 
 **Fontes:** https://supabase.com/docs/guides/database/prisma · https://supabase.com/docs/guides/database/connecting-to-postgres · https://www.prisma.io/docs/guides/upgrade-prisma-orm/v7

@@ -10,7 +10,7 @@
 
 [Rotas, contrato de perfil e limites](../docs/ENTREGA_E02-T03.md). Login consulta Supabase e exige perfil ativo administrado em app_metadata; nenhum papel é escolhido pelo usuário. Os dashboards privados mostram estado vazio enquanto dados reais/gestão administrativa não estão conectados. Cadastro, inserção e reset de senha real continuam pendentes.
 
-Papéis atuais: **ADMIN** pode criar usuários e inserir dados; **USER** pode somente ler/exportar os dados autorizados. A política é verificada no servidor, sem confiar no papel enviado pelo frontend. [Implementação e limites](../docs/ENTREGA_E02-T04.md): os serviços reais de cadastro/inserção e a persistência dos perfis ainda estão pendentes; nenhuma conta de produção foi criada.
+Papéis atuais: **ADMIN** pode criar usuários e inserir dados; **USER** pode somente ler/exportar os dados autorizados. A política é verificada no servidor, sem confiar no papel enviado pelo frontend. [Implementação e limites](../docs/ENTREGA_E02-T04.md): cadastro via Auth Admin está implementado em /admin/usuarios e depende de chave privada válida; inserção de produtividade e provisioning UserProfile ainda estão pendentes. Nenhuma conta de produção foi criada.
 
 Preparação para GitHub/Vercel/Supabase: [PUBLICACAO_PRODUTIVA.md](../docs/PUBLICACAO_PRODUTIVA.md). Root Directory na Vercel: `painel-produtividade`; Node 24.x; build `npm run build`. Execute `npm run check:publication` antes de enviar código. O Supabase informado é produção; não reutilizá-lo automaticamente em previews. Provisionamento de perfis e dados reais continuam pendentes.
 
@@ -135,7 +135,7 @@ Esses cálculos ainda não estão conectados à página de demonstração. A apl
 
 O domínio agora separa filtros dos cards/detalhes e do histórico: Mês não altera Performance Mensal nem Evolução. Os supervisores disponíveis seguem as operações e as escolhas incompatíveis são removidas.
 
-O caso de uso do servidor revalida um provedor de acesso a cada chamada e exige escopo por operações no contrato de consulta. A autenticação real e o adaptador Prisma ainda não existem. Consulte [modules/productivity/README.md](modules/productivity/README.md) para o contrato e seus limites.
+O caso de uso do servidor revalida um provedor de acesso a cada chamada e exige escopo por operações no contrato de consulta. A autenticação SSR e o cliente Prisma agora existem; o provider/repositório real de produtividade ainda está pendente. Consulte [modules/productivity/README.md](modules/productivity/README.md) para o contrato e seus limites.
 
 ## Endpoints de demonstração — E05-T04
 
@@ -272,3 +272,9 @@ Matriz comum de 54 casos em `tests/unit/productivity-authorization.test.ts` veri
 ## Preparação de release — E10-T05
 
 [Checklist de release e migração](../docs/CHECKLIST_RELEASE_MIGRACAO.md) com evidências locais, condições de homologação, ensaio, reconciliação, backup/restauração e critérios de interrupção. [Relatório da entrega](../docs/ENTREGA_E10-T05.md). Nenhum deploy ou migração executado; produção depende de autenticação, banco, importação e aceites reais. Próximo passo recomendado: E00-T01 — confirmar fonte atual, competências e formatos de META BATIDA antes de integrar serviços reais.
+
+## Prisma — schema e conexões (E03-T01/T02)
+
+Instalado Prisma 7.10.1 com adapter-pg. Schema com oito modelos, migrations em arquivo e cliente server-only lazy. postinstall/build geram o cliente; generated/prisma não é versionado. Nenhuma migration é aplicada automaticamente. [Entrega](../docs/ENTREGA_E03-T01-T02.md) · [comandos e configuração](prisma/README.md).
+
+Use DATABASE_URL privada para runtime e DIRECT_URL privada para migrations; TLS verifica CA/hostname. npm run db:check e npm run db:check -- --direct foram validados usando apenas SELECT 1 via Prisma. Migração inicial continua pendente; formulários/consultas não passam a salvar dados reais automaticamente.

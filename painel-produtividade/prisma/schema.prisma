@@ -1,0 +1,166 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum ImportKind {
+  MANUAL
+  FILE
+  GOOGLE_SHEETS
+}
+
+enum ImportBatchStatus {
+  PENDING
+  VALIDATED
+  APPLIED
+  FAILED
+}
+
+/// ID equals Supabase Auth user UUID. Auth owns credentials; no passwords here.
+model UserProfile {
+  id              String                @id @db.Uuid
+  email           String                @unique @db.VarChar(254)
+  role            UserRole              @default(USER)
+  active          Boolean               @default(true)
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  operationAccess UserOperationAccess[]
+  imports         ImportBatch[]
+  auditLogs       AuditLog[]
+
+  @@map("user_profiles")
+}
+
+model UserOperationAccess {
+  userId      String      @map("user_id") @db.Uuid
+  operationId String      @map("operation_id") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operation   Operation   @relation(fields: [operationId], references: [id], onDelete: Restrict)
+
+  @@id([userId, operationId])
+  @@index([operationId])
+  @@map("user_operation_access")
+}
+
+model Operation {
+  id             String                @id @default(uuid()) @db.Uuid
+  name           String                @db.VarChar(200)
+  normalizedName String                @unique @map("normalized_name") @db.VarChar(200)
+  active         Boolean               @default(true)
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  userAccess     UserOperationAccess[]
+  records        ProductivityRecord[]
+
+  @@map("operations")
+}
+
+/// Names are not unique: homonyms require explicit identity resolution.
+model Supervisor {
+  id             String               @id @default(uuid()) @db.Uuid
+  name           String               @db.VarChar(200)
+  normalizedName String               @map("normalized_name") @db.VarChar(200)
+  externalId     String?              @unique @map("external_id") @db.VarChar(200)
+  active         Boolean              @default(true)
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  records        ProductivityRecord[]
+
+  @@index([normalizedName])
+  @@map("supervisors")
+}
+
+/// externalId is an opaque, source-namespaced identifier, never derived from name alone.
+model Technician {
+  id             String               @id @default(uuid()) @db.Uuid
+  name           String               @db.VarChar(200)
+  normalizedName String               @map("normalized_name") @db.VarChar(200)
+  externalId     String?              @unique @map("external_id") @db.VarChar(200)
+  active         Boolean              @default(true)
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  records        ProductivityRecord[]
+
+  @@index([normalizedName])
+  @@map("technicians")
+}
+
+model ProductivityRecord {
+  id             String       @id @default(uuid()) @db.Uuid
+  referenceMonth DateTime     @map("reference_month") @db.Date
+  operationId    String       @map("operation_id") @db.Uuid
+  supervisorId   String       @map("supervisor_id") @db.Uuid
+  technicianId   String       @map("technician_id") @db.Uuid
+  contract       String       @db.VarChar(200)
+  production     Decimal      @db.Decimal(14, 2)
+  goalMet        Boolean?     @map("goal_met")
+  controller     String?      @db.VarChar(200)
+  status         String?      @db.VarChar(200)
+  /// Stable origin namespace, not merely FILE/MANUAL.
+  source         String       @db.VarChar(200)
+  sourceRowKey   String       @map("source_row_key") @db.VarChar(200)
+  importBatchId  String?      @map("import_batch_id") @db.Uuid
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  operation      Operation    @relation(fields: [operationId], references: [id], onDelete: Restrict)
+  supervisor     Supervisor   @relation(fields: [supervisorId], references: [id], onDelete: Restrict)
+  technician     Technician   @relation(fields: [technicianId], references: [id], onDelete: Restrict)
+  importBatch    ImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: Restrict)
+
+  @@unique([source, sourceRowKey])
+  @@index([referenceMonth, operationId, supervisorId])
+  @@index([operationId, supervisorId])
+  @@index([technicianId, referenceMonth])
+  @@index([importBatchId])
+  @@map("productivity_records")
+}
+
+model ImportBatch {
+  id             String               @id @default(uuid()) @db.Uuid
+  source         String               @db.VarChar(200)
+  kind           ImportKind
+  fileName       String?              @map("file_name") @db.VarChar(255)
+  status         ImportBatchStatus    @default(PENDING)
+  rowsReceived   Int                  @default(0) @map("rows_received")
+  rowsImported   Int                  @default(0) @map("rows_imported")
+  rowsRejected   Int                  @default(0) @map("rows_rejected")
+  checksum       String?              @db.VarChar(64)
+  executedBy     String               @map("executed_by") @db.Uuid
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  executedByUser UserProfile          @relation(fields: [executedBy], references: [id], onDelete: Restrict)
+  records        ProductivityRecord[]
+
+  @@index([source, checksum])
+  @@index([executedBy, createdAt])
+  @@index([status, createdAt])
+  @@map("import_batches")
+}
+
+/// Metadata must be minimized/redacted by application services, never store secrets or raw uploads.
+model AuditLog {
+  id        String       @id @default(uuid()) @db.Uuid
+  actorId   String?      @map("actor_id") @db.Uuid
+  action    String       @db.VarChar(120)
+  entity    String       @db.VarChar(80)
+  entityId  String?      @map("entity_id") @db.Uuid
+  metadata  Json?        @db.JsonB
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  actor     UserProfile? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([entity, entityId, createdAt])
+  @@map("audit_logs")
+}

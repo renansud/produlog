@@ -1,3 +1,9 @@
+import { parse } from "dotenv";
+
+export function privateEnvValues(content) {
+  return Object.values(parse(content)).filter((value) => value.length >= 20);
+}
+
 export function publicationIssue(file, buffer, realValues = []) {
   const parts = file.replaceAll("\\", "/").split("/");
   const name = parts.at(-1);

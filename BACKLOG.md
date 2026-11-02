@@ -33,8 +33,10 @@ Arquivo: `docs/etapas/02-autenticacao.md`
 ## Etapa 03 — Prisma + Supabase PostgreSQL
 Arquivo: `docs/etapas/03-banco.md`
 
-- [ ] **E03-T01** — Instalar Prisma estável e adapter-pg
-- [ ] **E03-T02** — Modelar entidades e índices
+- [x] **E03-T01** — Instalar Prisma estável e adapter-pg
+- [x] **E03-T02** — Modelar entidades e índices
+Evidência E03-T01/T02: [instalação, schema e conexões](docs/ENTREGA_E03-T01-T02.md). Migration somente preparada em arquivo; E03-T03/T04/T05 continuam pendentes.
+
 - [ ] **E03-T03** — Criar migração inicial em banco de desenvolvimento
 - [ ] **E03-T04** — Implementar cliente Prisma server-only e repositórios
 - [ ] **E03-T05** — Criar seeds sintéticos e testes de conexão

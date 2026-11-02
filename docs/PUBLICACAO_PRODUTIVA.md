@@ -1,10 +1,10 @@
-# Preparação de GitHub, Vercel e Supabase — produtiva
+# Preparação de GitHub, Vercel e Supabase — produlog
 
-Atualizado em 2026-11-01. Nome de repositório solicitado: produtiva; visibilidade proposta: privada. Conta/organização GitHub ainda precisa ser confirmada. Projeto Supabase fornecido pelo usuário classificado como produção; valores ficam somente no ambiente local e no gerenciador de configuração do destino.
+Atualizado em 2026-11-02. Destino confirmado pelo responsável: https://github.com/renansud/produlog.git . Visibilidade do repositório não foi alterada. Projeto Supabase fornecido pelo usuário classificado como produção; valores ficam somente no ambiente local e no gerenciador de configuração do destino.
 
 ## Estado verificado
 
-- Repositório local inicializado em C:/Users/SERVLOG/Documents/projetos, branch main; ainda sem commit, remote, push ou deploy.
+- Repositório local inicializado em C:/Users/SERVLOG/Documents/projetos, branch main; primeiro commit local criado, origin definido para renansud/produlog e login GitHub disponível. Conferir o resultado do push no histórico Git; nenhum deploy foi executado pelo agente.
 - Aplicação Next.js em painel-produtividade; documentação e workflow na raiz. Um único repositório, sem workspaces ou microsserviços adicionais.
 - Clientes Supabase SSR e browser configurados; GET Auth health do projeto fornecido retornou HTTP 200, usando a chave pública local. Isso comprova alcance do serviço Auth e aceitação da requisição, não login, RBAC, RLS, banco ou persistência.
 - .env.local e subaps.txt ignorados pelo Git. Artefatos locais, .tools, .vercel e certificados também excluídos. .env.example contém placeholders.
@@ -12,7 +12,7 @@ Atualizado em 2026-11-01. Nome de repositório solicitado: produtiva; visibilida
 
 ## GitHub
 
-1. Confirmar a conta/organização e criar ou escolher o repositório privado produtiva. Nenhum repositório remoto foi criado nesta entrega.
+1. Destino confirmado: renansud/produlog. Usar o repositório existente; não alterar sua visibilidade.
 2. Conferir os candidatos com git status, git diff --cached e npm run check:publication na pasta da aplicação. Não usar git add -f para incluir arquivos privados.
 3. Configurar a identidade de commit real do usuário, criar o primeiro commit revisado e só então apontar origin para a URL confirmada. Não inventar nome/email ou remote.
 4. Enviar main após confirmação do destino e acesso autenticado. Nenhum token deve ser enviado pelo chat ou incluído em comando/documento.
@@ -24,7 +24,7 @@ Configuração preparada em painel-produtividade/vercel.json; projeto Vercel e i
 
 | Campo | Valor a configurar no projeto Vercel |
 | --- | --- |
-| Git Repository | Conta confirmada / produtiva |
+| Git Repository | renansud/produlog |
 | Framework | Next.js |
 | Root Directory | painel-produtividade |
 | Node.js | 24.x, conforme engines e .node-version |
@@ -35,7 +35,7 @@ Configuração preparada em painel-produtividade/vercel.json; projeto Vercel e i
 
 Root Directory é uma configuração do projeto Vercel; não foi inventada uma propriedade rootDirectory em vercel.json. A integração Git pode disparar deploy no import/push: a criação/vinculação deve acontecer apenas com o candidato e destino revisados.
 
-Variáveis necessárias atualmente: NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Cadastrar os valores diretamente no ambiente de destino, sem colocá-los no repositório. As duas são públicas por contrato; nunca usar chave secret/service-role ou senha em NEXT_PUBLIC_. DATABASE_URL e DIRECT_URL só serão necessárias quando o módulo Prisma for implementado, exclusivamente no servidor.
+Variáveis necessárias atualmente: NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Cadastrar os valores diretamente no ambiente de destino, sem colocá-los no repositório. As duas são públicas por contrato; nunca usar chave secret/service-role ou senha em NEXT_PUBLIC_. Prisma 7.10.1 e schema estão implementados: DATABASE_URL e DIRECT_URL são privadas e já passaram em SELECT 1 via Prisma com CA/TLS verificados. No destino, configurar as URLs apropriadas ao ambiente e caminho do certificado público incluído em prisma/certs. Migration inicial não foi aplicada; nenhum dado real foi conectado às telas.
 
 Como o projeto informado é produção, não reutilizar suas credenciais/dados automaticamente em Preview/Development. Criar ou selecionar projeto Supabase separado de homologação antes de configurar esses ambientes. Não copiar segredos de produção para executar testes ou CI; os testes atuais usam dados sintéticos.
 
