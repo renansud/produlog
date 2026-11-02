@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "skills": {
+    "building-components": {
+      "source": "vercel/components.build",
+      "sourceType": "github",
+      "skillPath": "skills/building-components/SKILL.md",
+      "computedHash": "20889af7cb9b3abca1e38824f7fffaa873eb0cc4d45187967b97bd85462cf934"
+    },
+    "env-vars": {
+      "source": "vercel/vercel-plugin",
+      "sourceType": "github",
+      "skillPath": "skills/env-vars/SKILL.md",
+      "computedHash": "1151d62bd778290a3d13f28b098558eb7480bc3c2722a7e691e91967a83b0f3f"
+    },
+    "next-dev-loop": {
+      "source": "../.tools/skill-sources/next-dev-loop",
+      "sourceType": "local",
+      "computedHash": "c305c83b726212e0284930c65cded2c4a4ab85f9bfccfa83b62274247fe3580e"
+    },
+    "react-best-practices": {
+      "source": "vercel/vercel-plugin",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "83f28c1a8f8cffb90ed525c68bcc328e3cd261608f1e59683d8f816f79abbdfa"
+    },
+    "verification": {
+      "source": "vercel/vercel-plugin",
+      "sourceType": "github",
+      "skillPath": "skills/verification/SKILL.md",
+      "computedHash": "ff4b74d8007f7d576fdbd7abed1cf65eebfba916c648456871107fa4c8d7d5da"
+    },
+    "web-design-guidelines": {
+      "source": "vercel/examples",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/web-design-guidelines/SKILL.md",
+      "computedHash": "6ce5d4c10f886ca2f053f52e57bbd6689fea57acfbc0301004cf6437a57490a9"
+    }
+  }
+}
